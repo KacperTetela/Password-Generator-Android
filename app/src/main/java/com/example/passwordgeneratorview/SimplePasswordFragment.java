@@ -13,7 +13,17 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import com.example.passwordgeneratorview.api.ApiService;
+import com.example.passwordgeneratorview.api.PasswordCriteria;
+import com.example.passwordgeneratorview.api.PasswordRequest;
+import com.example.passwordgeneratorview.api.RetrofitClient;
 import com.google.android.material.slider.Slider;
+
+import java.util.concurrent.CompletableFuture;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class SimplePasswordFragment extends Fragment {
@@ -51,46 +61,68 @@ public class SimplePasswordFragment extends Fragment {
 
         // Logika dla slidera
         slider.addOnChangeListener((slider, value, fromUser) -> {
-            selectedSliderValue = Math.round(value); // Możesz usunąć Math.round, jeśli nie chcesz zaokrąglania
+            selectedSliderValue = Math.round(value);
             System.out.println(selectedSliderValue + " - wartość slidera");
         });
 
         // Obsługa przycisku generowania hasła
         generateButton.setOnClickListener(v -> {
-            String generatedPassword = generatePassword(selectedSliderValue, bigLetterCheckBox.isChecked(),
-                    digitalCheckBox.isChecked(), specialSignsCheckBox.isChecked());
-            passwordTextView.setText(generatedPassword);
+            // Zbieramy dane z checkboxów
+            boolean includeSymbols = specialSignsCheckBox.isChecked();
+            boolean includeUppercase = bigLetterCheckBox.isChecked();
+            boolean includeNumbers = digitalCheckBox.isChecked();
+
+
+            PasswordCriteria passwordCriteria = PasswordCriteria.builder()
+                    .digits(includeNumbers)
+                    .special(includeSymbols)
+                    .uppercase(includeUppercase)
+                    .length(selectedSliderValue)
+                    .build();
+
+            downloadData(passwordCriteria).thenAccept(data -> {
+                // Przetwarzanie danych po otrzymaniu odpowiedzi
+                Button btnCopy = view.findViewById(R.id.btnCopy);
+                btnCopy.setVisibility(View.VISIBLE);
+                passwordTextView.setText(data);
+                System.out.println("Dane: " + data);
+            }).exceptionally(throwable -> {
+                // Obsługa błędów
+                System.out.println("Błąd: " + throwable.getMessage());
+                throwable.printStackTrace();
+                return null;
+            });
+
         });
     }
 
-    private String generatePassword(int length, boolean includeUppercase, boolean includeNumbers, boolean includeSymbols) {
-        String lowerCase = "abcdefghijklmnopqrstuvwxyz";
-        String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String numbers = "0123456789";
-        String symbols = "!@#$%^&*()-_=+[]{}|;:',.<>?/";
+    public CompletableFuture<String> downloadData(PasswordCriteria passwordCriteria) {
+        PasswordRequest passwordRequest = new PasswordRequest("COMPLEX",
+                passwordCriteria.isIncludeSymbols(), passwordCriteria.isIncludeUppercase(),
+                passwordCriteria.isIncludeNumbers(), passwordCriteria.getLength());
 
-        boolean bigLetterValue = bigLetterCheckBox.isChecked();
-        boolean digitalValue = digitalCheckBox.isChecked();
-        boolean specialSignsValue = specialSignsCheckBox.isChecked();
+        CompletableFuture<String> futureData = new CompletableFuture<>();
 
+        ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
+        Call<String> call = apiService.createPassword(passwordRequest);
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                if (response.isSuccessful()) {
+                    String data = response.body();
+                    futureData.complete(data);  // Zakończenie i przekazanie danych do CompletableFuture
+                } else {
+                    futureData.completeExceptionally(new Exception("Error: " + response.code()));  // Zakończenie z błędem
+                }
+            }
 
-        for (int i = 0; i < 1; i++) {
-            System.out.println("Big letter Value: " + bigLetterValue);
-            System.out.println("Big letter Value: " + digitalValue);
-            System.out.println("Big letter Value: " + specialSignsValue);
-            System.out.println(selectedSliderValue + " - wartosc slidera");
-        }
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                futureData.completeExceptionally(t);  // Zakończenie z błędem
+            }
+        });
 
-        String charPool = lowerCase; // Domyślnie tylko małe litery
-        if (includeUppercase) charPool += upperCase;
-        if (includeNumbers) charPool += numbers;
-        if (includeSymbols) charPool += symbols;
-
-        StringBuilder password = new StringBuilder();
-        for (int i = 0; i < length; i++) {
-            int index = (int) (Math.random() * charPool.length());
-            password.append(charPool.charAt(index));
-        }
-        return password.toString();
+        return futureData;
     }
+
 }

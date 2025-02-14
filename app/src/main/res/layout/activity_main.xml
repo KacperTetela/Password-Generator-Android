@@ -19,20 +19,22 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:padding="8dp">
+        android:padding="0dp">
 
         <Button
             android:id="@+id/complexPassword"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:layout_weight="1"
+            android:layout_margin="8dp"
             android:text="Complex Password" />
 
         <Button
             android:id="@+id/simplePassword"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:layout_weight="1"
+            android:layout_margin="8dp"
             android:text="Simple Password" />
 
     </LinearLayout>
@@ -42,20 +44,22 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:padding="8dp">
+        android:padding="0dp">
 
         <Button
             android:id="@+id/soundsLikePassword"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:layout_weight="1"
+            android:layout_margin="8dp"
             android:text="Sounds Like Password" />
 
         <Button
             android:id="@+id/passwordHistory"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:layout_weight="1"
+            android:layout_margin="8dp"
             android:text="Password History" />
 
     </LinearLayout>
