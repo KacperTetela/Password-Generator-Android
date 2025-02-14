@@ -97,7 +97,7 @@ public class SimplePasswordFragment extends Fragment {
     }
 
     public CompletableFuture<String> downloadData(PasswordCriteria passwordCriteria) {
-        PasswordRequest passwordRequest = new PasswordRequest("COMPLEX",
+        PasswordRequest passwordRequest = new PasswordRequest("SIMPLE",
                 passwordCriteria.isIncludeSymbols(), passwordCriteria.isIncludeUppercase(),
                 passwordCriteria.isIncludeNumbers(), passwordCriteria.getLength());
 

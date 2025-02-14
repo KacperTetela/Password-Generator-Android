@@ -13,4 +13,7 @@ public interface ApiService {
         @POST("api/v1/passwords")
         Call<String> createPassword(@Body PasswordRequest passwordRequest);
 
+        @POST("api/v1/passwords")
+        Call<String> createPassword(@Body SoundLikePasswordRequest soundLikePasswordRequest);
+
 }

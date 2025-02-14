@@ -11,12 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.passwordgeneratorview.api.ApiService;
 import com.example.passwordgeneratorview.api.PasswordCriteria;
 import com.example.passwordgeneratorview.api.PasswordRequest;
 import com.example.passwordgeneratorview.api.RetrofitClient;
+import com.example.passwordgeneratorview.api.SoundLikePasswordRequest;
 import com.google.android.material.slider.Slider;
 
 import java.util.concurrent.CompletableFuture;
@@ -35,6 +37,7 @@ public class SoundsLikePasswordFragment extends Fragment {
     private CheckBox specialSignsCheckBox;
     private Button generateButton;
     private Slider slider;
+    private EditText word;
 
     public SoundsLikePasswordFragment() {
         // Required empty public constructor
@@ -58,6 +61,7 @@ public class SoundsLikePasswordFragment extends Fragment {
         digitalCheckBox = view.findViewById(R.id.digitalCheckBox);
         specialSignsCheckBox = view.findViewById(R.id.specialSignsCheckBox);
         slider = view.findViewById(R.id.passwordLengthSlider);
+        word = view.findViewById(R.id.passwordWord);
 
         // Logika dla slidera
         slider.addOnChangeListener((slider, value, fromUser) -> {
@@ -71,6 +75,7 @@ public class SoundsLikePasswordFragment extends Fragment {
             boolean includeSymbols = specialSignsCheckBox.isChecked();
             boolean includeUppercase = bigLetterCheckBox.isChecked();
             boolean includeNumbers = digitalCheckBox.isChecked();
+            String relatedWord = word.getText().toString();
 
 
             PasswordCriteria passwordCriteria = PasswordCriteria.builder()
@@ -80,7 +85,7 @@ public class SoundsLikePasswordFragment extends Fragment {
                     .length(selectedSliderValue)
                     .build();
 
-            downloadData(passwordCriteria).thenAccept(data -> {
+            downloadData(passwordCriteria, relatedWord).thenAccept(data -> {
                 // Przetwarzanie danych po otrzymaniu odpowiedzi
                 Button btnCopy = view.findViewById(R.id.btnCopy);
                 btnCopy.setVisibility(View.VISIBLE);
@@ -96,10 +101,10 @@ public class SoundsLikePasswordFragment extends Fragment {
         });
     }
 
-    public CompletableFuture<String> downloadData(PasswordCriteria passwordCriteria) {
-        PasswordRequest passwordRequest = new PasswordRequest("COMPLEX",
+    public CompletableFuture<String> downloadData(PasswordCriteria passwordCriteria, String relatedWord) {
+        SoundLikePasswordRequest passwordRequest = new SoundLikePasswordRequest("SOUNDS_LIKE",
                 passwordCriteria.isIncludeSymbols(), passwordCriteria.isIncludeUppercase(),
-                passwordCriteria.isIncludeNumbers(), passwordCriteria.getLength());
+                passwordCriteria.isIncludeNumbers(), passwordCriteria.getLength(), relatedWord);
 
         CompletableFuture<String> futureData = new CompletableFuture<>();
 
